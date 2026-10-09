@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagram Design 中文文档</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --accent: #eb6c36;
+      --accent-light: #fff3ee;
+      --code-bg: #f3f4f6;
+      --table-header: #f9fafb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --surface: #1f2937;
+        --border: #374151;
+        --text: #f9fafb;
+        --text-muted: #9ca3af;
+        --accent: #f97316;
+        --accent-light: #2c1a11;
+        --code-bg: #182234;
+        --table-header: #263349;
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      color: var(--text);
+      background-color: var(--bg);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+    header {
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+    header img {
+      max-width: 100%;
+      height: auto;
+    }
+    h1, h2, h3, h4 {
+      color: var(--text);
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    h1 {
+      font-size: 2.25rem;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+    }
+    h2 {
+      font-size: 1.75rem;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    h3 {
+      font-size: 1.3rem;
+      margin-top: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+    p, ul, ol {
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+    }
+    ul, ol {
+      padding-left: 1.5rem;
+    }
+    li {
+      margin-bottom: 0.35rem;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    hr {
+      border: 0;
+      height: 1px;
+      background: var(--border);
+      margin: 2.5rem 0;
+    }
+    blockquote {
+      margin: 1.5rem 0;
+      padding: 0.85rem 1.25rem;
+      background-color: var(--accent-light);
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+      color: var(--text);
+    }
+    blockquote p:last-child {
+      margin-bottom: 0;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.875em;
+      background-color: var(--code-bg);
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+    }
+    pre {
+      background-color: var(--code-bg);
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      font-size: 0.9em;
+      line-height: 1.5;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      font-size: inherit;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      background-color: var(--table-header);
+      font-weight: 600;
+    }
+    .gallery-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 12px;
+      border: none;
+      background: transparent;
+    }
+    .gallery-table td {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 12px;
+      text-align: center;
+      vertical-align: top;
+    }
+    .gallery-table img {
+      width: 100%;
+      max-width: 260px;
+      height: auto;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      display: block;
+      margin: 0 auto 8px auto;
+    }
+    .gallery-table b {
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+    .gallery-table sub {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    .callout {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 4px;
+    }
+    .banner-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin: 1rem 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/hero/hero-dark.webp">
+        <img alt="Diagram Design. 让你的设计师也不会嫌弃的出版级架构图与图表设计。" src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/hero/hero-light.webp">
+      </picture>
+      <p style="margin-top: 1rem;">
+        <a href="https://trendshift.io/repositories/26141" target="_blank" rel="noopener noreferrer">
+          <img src="https://trendshift.io/api/badge/repositories/26141" alt="Trendshift Badge" width="250" height="55" style="border:none;">
+        </a>
+      </p>
+    </header>
+
+    <p align="center">
+      <a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/architecture.png" target="_blank">
+        <img class="banner-img" src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/architecture.webp" alt="内容站点架构">
+      </a>
+      <a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/loop.png" target="_blank">
+        <img class="banner-img" src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/loop.webp" alt="自优化闭环图">
+      </a>
+    </p>
+
+    <p><em>2.0 新增 —— 闭环图（The Loop）：带有共享内存中枢的飞轮机制，虚线表示回写流。</em></p>
+    <p><em>2.3 新增：语义系统模式与可选的无障碍动效，同时仍默认输出纯静态格式。</em></p>
+    <p><em>2.5.10 新增：10 种全新布局语法 —— 桑基图、鱼骨图、沃德利图（Wardley map）、看板、用户旅程图、部署图、依赖图、UML 类图、用户故事地图与数据库架构图。</em></p>
+
+    <p>专为 Claude Code、Codex、Factory Droid、Pi 以及支持 Agent Skills 的宿主环境打造的高级出版级图表库。采用完全自包含的 <strong>HTML + SVG</strong>。无臃肿阴影，杜绝粗糙千篇一律的 Mermaid 废图风。语义模式将“行为”与“布局”分离解耦，因此队列、策略追踪或信任边界等场景无需无限膨胀图表种类，直接复用最近似的基础类型即可。默认输出纯静态 HTML，同时支持用于有序讲解的可选动效。该技能还可将现有的 draw.io、Mermaid 或 Excalidraw 资源，按指定的格式、尺寸与精细度重新绘制。</p>
+
+    <p><strong>无需打开 Figma。告别平庸圆角方块。不再把 30 分钟浪费在调配色上。</strong></p>
+
+    <p>项目官网：<a href="https://diagramdesign.dev" target="_blank">diagramdesign.dev</a></p>
+
+    <hr>
+
+    <h2>我为什么要打造它</h2>
+    <p>我在 <a href="https://littlemight.com" target="_blank">littlemight.com</a> 撰写文章（并兼职运营 <a href="https://bestself.co" target="_blank">BestSelf.co</a>）。每次我需要一张图表 —— 架构草图、流程图、或是重要性金字塔 —— 我向 Claude 提需求，得到的总是千篇一律的带圆角框框的通用图形，跟网站本身的风格毫不搭调。我只能要么在 Figma 里痛苦地调整半小时，要么干脆弃用图表。</p>
+    <p>因此我为它打造了这款 Claude Code 技能。具备出版级视觉质感，仅需 60 秒读取你的网站，即可无缝匹配你的专属品牌风格。</p>
+    <blockquote>
+      <strong>高品质的核心动作往往是“克制与删除”。</strong> 每一个节点都必须有存在的理由。强调色仅保留给读者第一眼必须看到的 1–2 个核心要素。目标信息密度：4/10。
+    </blockquote>
+
+    <hr>
+
+    <h2>支持生成的图表类型</h2>
+    <p>每种视觉类型都自带三种静态变体风格：极简明亮（minimal light）、极简暗色（minimal dark）与全出版级（full-editorial）。可直接在浏览器中打开，零构建步骤、零 JavaScript、无外部图片依赖。</p>
+
+    <table class="gallery-table">
+      <tr>
+        <td width="33%"><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/architecture.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/architecture.webp" alt="架构图"></a><b>架构图 (Architecture)</b><sub>组件与连接</sub></td>
+        <td width="33%"><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/it-state.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/it-state.webp" alt="IT 现状图"></a><b>IT 现状图 (IT current-state)</b><sub>遗留系统全景与现代化演进</sub></td>
+        <td width="33%"><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/flowchart.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/flowchart.webp" alt="流程图"></a><b>流程图 (Flowchart)</b><sub>决策判定逻辑</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/sequence.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/sequence.webp" alt="时序图"></a><b>时序图 (Sequence)</b><sub>随时间推移的消息时序</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/state.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/state.webp" alt="状态机"></a><b>状态机 (State machine)</b><sub>状态与转换</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/er.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/er.webp" alt="ER 实体关系图"></a><b>ER / 数据模型 (ER)</b><sub>实体与字段属性</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/timeline.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/timeline.webp" alt="时间轴"></a><b>时间轴 (Timeline)</b><sub>轴线上的事件节点</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/swimlane.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/swimlane.webp" alt="泳道图"></a><b>泳道图 (Swimlane)</b><sub>跨职能/角色协作流程</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/quadrant.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/quadrant.webp" alt="象限图"></a><b>象限图 (Quadrant)</b><sub>双轴定位与优先级</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/radar.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/radar.webp" alt="雷达图"></a><b>雷达/蜘蛛图 (Radar)</b><sub>多维度指标对比</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/loop.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/loop.webp" alt="闭环飞轮图"></a><b>闭环/飞轮图 (Loop)</b><sub>增强回路与共享中枢</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/nested.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/nested.webp" alt="嵌套图"></a><b>嵌套包含图 (Nested)</b><sub>基于包含关系的层级结构</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/tree.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/tree.webp" alt="树状图"></a><b>树状图 (Tree)</b><sub>父节点 → 子节点分层</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/org-chart.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/org-chart.webp" alt="组织架构图"></a><b>组织架构图 (Org chart)</b><sub>权责归属与路由层级</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/layers.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/layers.webp" alt="层级堆叠图"></a><b>分层堆叠图 (Layer stack)</b><sub>抽象层逐层堆叠</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/venn.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/venn.webp" alt="韦恩图"></a><b>韦恩图 (Venn)</b><sub>集合交集与重叠</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/pyramid.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/pyramid.webp" alt="金字塔图"></a><b>金字塔/漏斗图 (Pyramid)</b><sub>层级排位或漏斗转化流失</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/bar.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/bar.webp" alt="柱状图"></a><b>柱状图 (Bar chart)</b><sub>分类指标对比</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/treemap.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/treemap.webp" alt="矩形树图"></a><b>矩形树图 (Treemap)</b><sub>基于面积的整体组成占比</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/line.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/line.webp" alt="折线图"></a><b>折线图 (Line chart)</b><sub>随时间推移的走势变化</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/gantt.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/gantt.webp" alt="甘特图"></a><b>甘特图 (Gantt)</b><sub>时间线上的任务与阶段</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/scatter.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/scatter.webp" alt="散点图"></a><b>散点图 (Scatter plot)</b><sub>数据分布与相关性分析</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/high-level.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/high-level.webp" alt="高阶全景图"></a><b>高阶全景图 (High-Level)</b><sub>集群端到端技术栈全景</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/process.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/process.webp" alt="流程推进图"></a><b>业务流程图 (Process)</b><sub>多角色序列化工作流</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/medallion.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/medallion.webp" alt="奖章式数据架构"></a><b>奖章架构 (Medallion)</b><sub>多层级数据湖仓存储</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/data-flow.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/data-flow.webp" alt="数据流图"></a><b>数据流图 (Data flow)</b><sub>角色作用域流水线阶段</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/dp-integration.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/dp-integration.webp" alt="数据产品集成"></a><b>DP 集成图 (DP integration)</b><sub>数据源 → 核心 → 消费端</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/dp-security-matrix.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/dp-security-matrix.webp" alt="安全矩阵"></a><b>DP 安全矩阵 (Security matrix)</b><sub>基于角色的访问权限控制</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/sankey.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/sankey.webp" alt="桑基图"></a><b>桑基图 (Sankey)</b><sub>分流与聚合的流量/量级转移</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/fishbone.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/fishbone.webp" alt="因果鱼骨图"></a><b>鱼骨图 (Fishbone)</b><sub>归类原因 → 指向单一结果</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/wardley.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/wardley.webp" alt="沃德利图"></a><b>沃德利图 (Wardley map)</b><sub>价值链 × 进化演进阶段</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/kanban.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/kanban.webp" alt="看板图"></a><b>看板 (Kanban)</b><sub>按状态分类的在制品流转</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/journey.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/journey.webp" alt="用户旅程图"></a><b>用户旅程图 (User journey)</b><sub>阶段、行动与情绪起伏</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/deployment.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/deployment.webp" alt="部署图"></a><b>部署图 (Deployment)</b><sub>环境分区、主机与交付物制品</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/dependency.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/dependency.webp" alt="依赖关系图"></a><b>依赖图 (Dependency graph)</b><sub>扇入、分级排序与循环依赖</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/uml-class.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/uml-class.webp" alt="UML 类图"></a><b>UML 类图 (UML class)</b><sub>类、操作方法与类型化关联</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/story-map.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/story-map.webp" alt="故事地图"></a><b>故事地图 (Story map)</b><sub>主干骨架 × 迭代发布切片</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/db-schema.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/db-schema.webp" alt="数据库 Schema"></a><b>数据库架构图 (DB schema)</b><sub>物理表结构与字段级外键关联</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/polar.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/polar.webp" alt="极坐标图"></a><b>极坐标图 (Polar chart)</b><sub>周期性幅度 · 线性半径尺度</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/waterfall.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/waterfall.webp" alt="瀑布图"></a><b>瀑布图 (Waterfall)</b><sub>累计总量 + 带符号的增减过渡</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/architecture-delta.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/architecture-delta.webp" alt="架构演进差量图"></a><b>架构差异对比 (Architecture delta)</b><sub>Before · 变更清单 · After 拓扑</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/exploded.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/exploded.webp" alt="轴测爆炸图"></a><b>轴测爆炸图 (Exploded)</b><sub>沿单轴拆解分离的各个部件</sub></td>
+      </tr>
+      <tr>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/axonometric-plan.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/axonometric-plan.webp" alt="轴测平面图"></a><b>轴测平面图 (Axonometric plan)</b><sub>同一平面上的房间与建筑布局</sub></td>
+        <td><a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/heatmap.png" target="_blank"><img src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/heatmap.webp" alt="热力图"></a><b>热力图 (Heatmap)</b><sub>行 × 列单元格离散数值分布</sub></td>
+        <td></td>
+      </tr>
+    </table>
+
+    <p><strong>架构差异对比图（Architecture delta）</strong> 通过同步拓扑结构对比，展示“演进前（Before）· 变更分类账 · 演进后（After）”，清晰呈现增、删、改、移及重连对象。单纯属性数值对比保留使用普通表格；单个静态切面架构直接使用通用架构图（Architecture）。</p>
+    <p><strong>轴测爆炸图（Exploded axonometric）</strong> 采用 2:1 二等角投影，将单一实体部件以均等间距沿轴线分解展开：例如手机拆解、开箱陈列、应用架构栈、AI 智能体分层栈或机械键盘结构。全部坐标源于单一数学投影函数，动效版本初始呈组装状态并进行单次爆炸展开演示。</p>
+    <p><strong>轴测平面图（Axonometric plan）</strong> 采用相同投影方式刻画单层空间或园区场景：墙体按桌面高度剖切，以便从单一视角纵览所有房间；或用于呈现按建设阶段标记的园区规划。</p>
+
+    <p><strong>在线画廊预览：</strong> <a href="https://cathrynlavery.github.io/diagram-design/" target="_blank">cathrynlavery.github.io/diagram-design</a> —— 也可在本地直接打开 <code>skills/diagram-design/assets/index.html</code>，在明亮、暗色与全出版级三种标签页间自由切换查看所有示例。</p>
+
+    <hr>
+
+    <h2>安装说明</h2>
+    <p>官方构建版本仅由此仓库分发。LittleMight（Cathryn Lavery 的公司）维护该插件清单，任何其他名称的包均为非官方副本。<a href="https://github.com/cathrynlavery/diagram-design/blob/main/PRIVACY.md">PRIVACY.md</a> 详细说明了该技能所发起的所有网络请求范围。</p>
+
+    <h3>Claude Code：</h3>
+    <pre><code>/plugin marketplace add cathrynlavery/diagram-design
+/plugin install diagram-design@diagram-design</code></pre>
+    <p>安装后需开启一次自动更新：运行 <code>/plugin</code>，进入 <strong>Marketplaces</strong>，选中 <strong>diagram-design</strong> 并开启 <strong>Enable auto-update</strong>。Claude Code 默认关闭第三方市场的自动更新；开启后将在后台拉取更新。收到提示时运行 <code>/reload-plugins</code>，或在下一次启动时生效。</p>
+
+    <h3>Codex：</h3>
+    <pre><code class="language-bash">codex plugin marketplace add cathrynlavery/diagram-design
+codex plugin add diagram-design@diagram-design</code></pre>
+    <p>Codex 启动时会自动刷新配置的 Git 市场。如需立即拉取更新，可执行 <code>codex plugin marketplace upgrade diagram-design</code> 并重启会话。</p>
+
+    <h3>GitHub Copilot：</h3>
+    <pre><code class="language-bash">copilot plugin marketplace add cathrynlavery/diagram-design
+copilot plugin install diagram-design@diagram-design</code></pre>
+    <p>Copilot 会安装共享的 Diagram Design 技能以及 doctor 诊断、导出、导入与配置文件能力。使用 <code>copilot skill list</code>（或交互式会话中的 <code>/skills</code>）确认安装，随后即可用自然语言生成图表。更新时执行 <code>copilot plugin marketplace update diagram-design</code> 后再执行 <code>copilot plugin update diagram-design@diagram-design</code>。</p>
+
+    <h3>Factory Droid：</h3>
+    <pre><code class="language-bash">droid plugin marketplace add https://github.com/cathrynlavery/diagram-design
+droid plugin install diagram-design@diagram-design --scope user</code></pre>
+    <p>Droid 按 Git Commit 跟踪插件。更新时运行 <code>droid plugin marketplace update diagram-design</code>，随后执行 <code>droid plugin update diagram-design@diagram-design --scope user</code> 并重启会话。</p>
+
+    <h3>Claude Cowork（企业/组织市场）：</h3>
+    <p>组织级 GitHub 市场目前要求私有或内部存储库，因此请先将此公开仓库镜像到您的组织旗下。在 <strong>Organization settings → Plugins</strong> 中选择 <strong>Add plugin → GitHub</strong>，关联该镜像库并在菜单中开启 <strong>Sync automatically</strong>。自动同步会在包含插件版本递增的 PR 合并到主分支时触发。随后在组织市场中安装 Diagram Design。</p>
+
+    <h3>Pi：</h3>
+    <pre><code class="language-bash">pi install https://github.com/cathrynlavery/diagram-design</code></pre>
+    <p>在打开的 Pi 会话中运行 <code>/reload</code>。Pi 会将该技能挂载到匹配的绘图意图，也可输入 <code>/skill:diagram-design</code> 显式调用。同时会注册 <code>/export-diagram</code>、<code>/import-mermaid</code>、<code>/import-excalidraw</code>、<code>/profile</code> 和 <code>/doctor</code> 提示词模板。Pi 支持通过 <code>pi update --extensions</code> 拉取最新更新。</p>
+
+    <h3>Kiro：</h3>
+    <p>从仓库子目录 URL 导入 Agent Skill：</p>
+    <pre><code>https://github.com/cathrynlavery/diagram-design/tree/main/skills/diagram-design</code></pre>
+    <p>Kiro 会将导入的技能复制到工作区的 <code>.kiro/skills/</code> 或全局 <code>~/.kiro/skills/</code>。需要更新时重新导入该 URL 即可。</p>
+
+    <h3>OpenCode：</h3>
+    <p>将 <code>skills/diagram-design/</code> 目录复制或软链接（symlink）到当前项目的 <code>.opencode/skills/diagram-design</code>，或全局 <code>~/.config/opencode/skills/diagram-design</code>。</p>
+
+    <h3>其他任意支持 Agent Skills 的宿主环境：</h3>
+    <p>（Cursor、Cline、Amp、Gemini CLI、Windsurf、Zed、Warp、Roo、Kilo 等）—— 跨 Agent 的 <a href="https://skills.sh" target="_blank"><code>skills</code> CLI</a> 会自动识别仓库结构并将完整技能（包含 <code>references/</code>、<code>assets/</code>、<code>scripts/</code>）安装到所选宿主目录：</p>
+    <pre><code class="language-bash">npx skills add cathrynlavery/diagram-design</code></pre>
+    <p>若涉及多个宿主，建议选择 <strong>Symlink</strong> 软链接方式，方便后续更新一键同步。通过 <code>npx skills update diagram-design</code> 拉取更新。</p>
+
+    <h3>可直接编辑的本地源码安装方式 (Editable install)</h3>
+    <p>如果你计划深度定制修改样式指南 <code>references/style-guide.md</code>，建议克隆仓库并建立软链接：</p>
+    <pre><code class="language-bash">git clone git@github.com:cathrynlavery/diagram-design.git ~/code/diagram-design
+
+# Claude Code：软链接内部技能目录
+ln -s ~/code/diagram-design/skills/diagram-design ~/.claude/skills/diagram-design
+
+# OpenCode 及其他宿主：
+mkdir -p ~/.config/opencode/skills
+ln -s ~/code/diagram-design/skills/diagram-design ~/.config/opencode/skills/diagram-design</code></pre>
+
+    <hr>
+
+    <h2>品牌入驻适配（Onboarding）—— 让图表具备你的专属品牌风格</h2>
+    <p>核心意义在于：输出采用<strong>属于你</strong>的色彩与字体的出版级图表，而不是千篇一律的通用模板。</p>
+    <p>开箱即用状态下，图表采用干净利落的<strong>深黑 + 原子橙（jet-black + atomic-tangerine）</strong>配色方案（烟白底色、墨黑线条、原子橙强调色、暗石板灰辅助色与银色细线）。直接截图就已经非常精美。但仅需 60 秒的初始化入驻，技能就会直接读取你的网站，提取品牌基因应用到所有图表中。</p>
+
+    <h3>交互流程</h3>
+    <pre><code>你：   "onboard diagram-design to https://yoursite.com"
+Agent： → 抓取你的网站主页
+        → 提取主色调、调色板及字体栈
+        → 将检测到的属性映射为语义 Token：
+            paper（底色）, ink（墨水/主字色）, muted（弱化色）, accent（主强调色）, link（链接色）
+        → 展示拟变更的对比差异 (Diff)
+        → 将设计 Token 写入 references/style-guide.md
+你：   "yes, apply it"</code></pre>
+
+    <h3>提取对应关系</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>从你网站提取的内容</th>
+          <th>转换对应至图表 Token</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;body&gt;</code> 背景色</td>
+          <td><code>paper</code> 底色</td>
+        </tr>
+        <tr>
+          <td>主要文本颜色</td>
+          <td><code>ink</code> 墨水色</td>
+        </tr>
+        <tr>
+          <td>二级文本 / 题注颜色</td>
+          <td><code>muted</code> 柔和暗淡色</td>
+        </tr>
+        <tr>
+          <td>卡片或容器容器背景</td>
+          <td><code>paper-2</code> 二级背景</td>
+        </tr>
+        <tr>
+          <td>高频品牌色（CTA按钮、链接、主标题）</td>
+          <td><code>accent</code> 核心视觉焦点强调色</td>
+        </tr>
+        <tr>
+          <td><code>&lt;h1&gt;</code> 字体系列</td>
+          <td><code>title</code> 标题字体</td>
+        </tr>
+        <tr>
+          <td><code>&lt;body&gt;</code> 字体系列</td>
+          <td><code>node-name</code> 节点名称字体</td>
+        </tr>
+        <tr>
+          <td><code>&lt;code&gt;</code> / <code>&lt;pre&gt;</code> 字体系列</td>
+          <td><code>sublabel</code> 附属标签代码字体</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>自动对比度检验</h3>
+    <p>在写入 Token 之前，技能会针对 <code>paper</code> 上的 <code>ink</code> 执行 WCAG AA 对比度验证。如果网站某个颜色在图表尺寸（9–12px）下对比度不足，它会自动提议微调后的合规数值并说明原因。</p>
+
+    <h3>默认开箱即具备无障碍支持（a11y）</h3>
+    <p>每个内联 SVG 均带有 <code>role="img"</code>、解析关联的 <code>aria-labelledby</code> 以及首位子级 <code>&lt;title&gt;</code> / <code>&lt;desc&gt;</code> 槽位。ID 按图表和变体加前缀，多张图表在同一页面内联也不会发生 ID 冲突。</p>
+
+    <h3>多客户 Profile 方案</h3>
+    <p>对不同客户进行一次配置，保存为命名的 Profile，并在各客户端项目中放入包含 <code>profile: &lt;slug&gt;</code> 的 <code>.diagram-design</code> 标记文件即可。标记项目将直接读取 <code>~/.diagram-design/profiles/&lt;slug&gt;.md</code>，互不干扰。</p>
+
+    <hr>
+
+    <h2>快速上手</h2>
+    <pre><code class="language-bash"># 在本地克隆的仓库中打开画廊查看所有图表示例
+open skills/diagram-design/assets/index.html       # macOS
+xdg-open skills/diagram-design/assets/index.html  # Linux
+
+# 在 Claude Code、Codex、Factory Droid 或 Pi 中直接提问：
+# "为我的应用制作一个架构图：前端、后端、数据库、Redis 缓存。"
+# "我需要一个四象限图，按影响力和工作量展示 Q2 季度项目。"
+# "绘制一个带 401 token 刷新的 bearer 认证时序图。"</code></pre>
+
+    <p>Agent 会自动选取最佳图表类型、构建对应的 HTML 并持久化保存。你也可以基于现有模板手动开发：</p>
+    <pre><code class="language-bash">cp skills/diagram-design/assets/template.html my-diagram.html        # 极简明亮
+cp skills/diagram-design/assets/template-full.html my-diagram.html   # 出版级带总结卡片
+cp skills/diagram-design/assets/template-motion.html my-diagram.html # 可选无障碍动效</code></pre>
+
+    <div class="callout">
+      <strong>语义模式与可选动效：</strong>
+      当图表涉及动态系统行为时，技能会优先匹配 9 种预置语义模式（扇入队列与瓶颈、重复阶段、非结构化输入转换、配对策略追踪、安全铺路、治理目录、补偿性安全层、可追溯块分解、生命周期阶段映射），再映射至最近似的基础视觉类型。动效支持 <code>none</code>、<code>reveal</code>、<code>step</code> 和 <code>loop</code> 模式，默认输出保持纯静态无脚本。
+    </div>
+
+    <hr>
+
+    <h2>从 draw.io、Mermaid 或 Excalidraw 导入并重绘</h2>
+    <p>已在 draw.io、Mermaid 或 Excalidraw 中绘制了草图？直接将源文件交由技能处理，它将按照这套高阶设计语言进行<strong>全新重绘</strong> —— 保留核心语义内容，输出完全符合出版标准的高品质图表。</p>
+
+    <p align="center">
+      <a href="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/import-drawio.png" target="_blank">
+        <img class="banner-img" src="https://raw.githubusercontent.com/cathrynlavery/diagram-design/main/docs/screenshots/thumbs/import-drawio.webp" alt="从 draw.io 重绘">
+      </a>
+      <small style="color: var(--text-muted); display: block; text-align: center;">将原本包含 12 个节点的杂乱 draw.io 文件重绘为适合博客配图的 balanced 级别图表。源文件的 6 种粉彩色填充归一为单一强调色，手拖的坐标严格规范为 4px 网格。</small>
+    </p>
+
+    <pre><code>/diagram-design:import-drawio platform.drawio
+/diagram-design:import-drawio platform.drawio --size=slide-16x9 --detail=simplified --audience=executive
+/diagram-design:import-mermaid README.md --diagram=all
+/diagram-design:import-mermaid architecture.mmd --size=slide-16x9 --detail=simplified
+/diagram-design:import-excalidraw whiteboard.excalidraw --size=slide-16x9 --detail=simplified</code></pre>
+
+    <p>或者直接自然语言交互：<em>“把这个 drawio 文件重绘一下放进我的 PPT”</em>、<em>“把这段 Mermaid 图转成高级出版质感”</em>、<em>“把这个白板草图弄得正式体面一点”</em>。</p>
+
+    <h3>核心四维调节维度 (The four dials)</h3>
+    <p>重点不是粗暴的文件格式转换，而是<strong>契合不同交付场景的最佳呈现形式</strong>：</p>
+    <table>
+      <thead>
+        <tr>
+          <th>调节维度</th>
+          <th>可选参数</th>
+          <th>产生的改变</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>格式 (Format)</strong></td>
+          <td><code>html</code> · <code>svg</code> · <code>png</code> · <code>html+png</code></td>
+          <td>最终交付载体。SVG 用于 Figma，PNG 用于幻灯片，HTML 用于 Web 发布。</td>
+        </tr>
+        <tr>
+          <td><strong>尺寸 (Size)</strong></td>
+          <td><code>doc-inline</code> · <code>doc-wide</code> · <code>slide-16x9</code> · <code>slide-4x3</code> · <code>social-og</code> · <code>social-square</code> · <code>print-a4-landscape</code> · <code>fit</code></td>
+          <td>调整 <code>viewBox</code> 与<strong>字体阶梯</strong> —— 幻灯片投影模式节点字号放大至 16px，而非文档内嵌的 12px。</td>
+        </tr>
+        <tr>
+          <td><strong>精细度 (Detail)</strong></td>
+          <td><code>faithful</code> (≤24 节点) · <code>balanced</code> (≤12) · <code>simplified</code> (≤7)</td>
+          <td>保留源节点层级的梯队规则：优先剔除纯装饰，其次合并副本与叶子节点簇，最后精简基础设施。</td>
+        </tr>
+        <tr>
+          <td><strong>受众 (Audience)</strong></td>
+          <td><code>engineer</code> (研发) · <code>mixed</code> (通用) · <code>executive</code> (管理层)</td>
+          <td>影响<strong>文本表述的颗粒度</strong>而非单纯节点数。例：<code>Auth Service / JWT · RS256 · :8443</code> → <code>Auth Service / token check</code> → <code>Sign-in (登录)</code>。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>每次导入最后都会输出一份<strong>精确度账单 (Fidelity ledger)</strong>，详细列出合并、折叠或删减了哪些要素，一目了然。</p>
+
+    <hr>
+
+    <h2>导出为 PNG / SVG</h2>
+    <p>图表开箱即为独立 HTML，同时也支持单独导出纯图表供 Figma、演示文稿或社交媒体卡片使用：</p>
+    <pre><code># Claude Code / Pi 命令：
+/diagram-design:export-diagram path/to/diagram.html
+/diagram-design:export-diagram path/to/diagram.html --svg-only
+/diagram-design:export-diagram path/to/diagram.html --png-only --scale=3
+/diagram-design:export-diagram path/to/diagram.html --registry
+
+# 或直接使用自然语言：
+"将此图表导出为 SVG 和 PNG。"
+"把 my-diagram.html 保存为 PNG。"</code></pre>
+    <ul>
+      <li><strong>SVG</strong> —— 提取 <code>&lt;svg&gt;</code> 节点并内联注入 Google Fonts，支持在浏览器、Figma 和 Illustrator 中独立正常呈现。</li>
+      <li><strong>PNG</strong> —— 底层默认通过 Playwright 以 2× 高清光栅化渲染（单次环境准备：<code>pip install playwright && playwright install chromium</code>）。</li>
+      <li><strong><code>--registry</code></strong> —— 针对采用可追踪块分解模式的图表，同步生成结构化元数据 <code>&lt;basename&gt;.registry.json</code>。</li>
+    </ul>
+
+    <hr>
+
+    <h2>项目架构</h2>
+    <p>采用渐进式披露设计（Progressive disclosure）。<code>SKILL.md</code> 在匹配意图后加载，只有涉及到具体某种图表类型时，对应的规范文档才会按需读入，最大限度降低大模型的上下文消耗。</p>
+
+    <pre><code>diagram-design/
+├── .agents/plugins/marketplace.json — Codex 市场配置
+├── .claude-plugin/                  — Claude 市场与插件清单
+├── commands/                        — 插件命令定义（导出、导入、配置、诊断等）
+├── prompts/                         — Pi 提示词模板
+├── skills/
+│   └── diagram-design/
+│       ├── SKILL.md                 — 核心哲学、类型选择速查指南、交付物核验清单
+│       ├── references/              — 仅在选中具体类型或图形基元时按需加载
+│       │   ├── style-guide.md       — 色彩与字体体系的唯一真实事实来源
+│       │   ├── semantic-patterns.md — 独立于布局之上的系统行为模式
+│       │   ├── animation.md         — 动效规范与无障碍约束
+│       │   ├── onboarding.md        — 网站 URL 自动提取品牌设计规范流程
+│       │   ├── output-spec.md       — 格式 × 尺寸 × 细节等级规范
+│       │   ├── export.md            — SVG / PNG 导出及缩放规范
+│       │   ├── type-*.md            — 各具体图表类型的详细规范说明
+│       │   └── layout-budget.md     — 布局空间预算与节点预算
+│       ├── scripts/                 — draw.io/Mermaid/Excalidraw 提取器及自检脚本
+│       └── assets/                  — 模板脚手架、三种变体示例 HTML、测试用例
+└── scripts/                         — CI 构建、验证门禁、皮肤检测、几何碰撞核验工具</code></pre>
+
+    <hr>
+
+    <h2>设计系统核心原则（一览）</h2>
+    <p>单一强调色，每张图仅设 1–2 个焦点元素。三种字体系列：Instrument Serif（标题与斜体引导说明）、Geist sans（节点名称正文字体）、Geist Mono（技术附属标签）。1px 极细发丝级边框，无浮夸投影，最大圆角限 10px。<strong>所有坐标、尺寸、边距间距必须能被 4 整除</strong> —— 这是图表脱离“廉价 AI 生成质感”的关键所在。等宽字体仅用于严格的技术语义（端口、URL、字段类型），杜绝滥用所谓 Geek 程序员风。</p>
+
+    <hr>
+
+    <h2>基础图元组件 (Primitives)</h2>
+    <ul>
+      <li><strong>注释题注 (Annotation callout)</strong> —— 斜体 Instrument Serif 字体配合虚线贝塞尔引线，用于边缘出版风格的额外补充注记。</li>
+      <li><strong>手绘风格滤镜 (Sketchy filter)</strong> —— 基于 SVG 湍流（turbulence）与置换贴图（displacement map）实现的自然手绘波纹，适合文稿插图。</li>
+      <li><strong>专用图标集 (Icon set)</strong> —— 包含 87 款单色 IT/云计算专用图标（笔记本、手机、用户、服务器、数据库、Docker、Kubernetes、AWS、GitHub、Postgres 等），统一继承 <code>currentColor</code>，可无缝跟随主题色调渲染。</li>
+    </ul>
+
+    <hr>
+
+    <h2>何时<strong>不应该</strong>使用本技能</h2>
+    <ul>
+      <li><strong>发推特或命令行纯终端输出的字符画</strong> → 请使用类似 wiretext 的字符工具。</li>
+      <li><strong>罗列信息条目的清单列表</strong> → 直接使用标准 Markdown 表格或无序列表。</li>
+      <li><strong>简单的 Before / After 对比</strong> → 使用左右双列表格更加直观。</li>
+      <li><strong>只有单个方块加标签的所谓“图”</strong> → 直接写成一句话即可，不要画图。</li>
+    </ul>
+    <p>动手绘图前请思考：<em>读者从这张图中获取的信息，是否比直接阅读一段结构精炼的文字更多？</em>如果不是，请不要画图。</p>
+
+    <hr>
+
+    <h2>关于作者</h2>
+    <p>由 <strong>Cathryn Lavery</strong> 打造 —— <a href="https://bestself.co" target="_blank">BestSelf.co</a> 创始人。在 <a href="https://littlemight.com" target="_blank">littlemight.com</a> 撰写关于 AI、创业以及高质感设计相关的博客与通讯。</p>
+    <p>如果该项目对你有所帮助，欢迎前往 GitHub 为本仓库点亮 Star！</p>
+  </div>
+</body>
+</html>
