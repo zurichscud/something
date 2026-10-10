@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GET /app/poster/qrcode 逻辑流程图</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --panel:#161a21;
+    --panel-2:#1b202a;
+    --line:#2a3140;
+    --txt:#e6e9ef;
+    --muted:#8b94a7;
+    --accent:#4c8dff;
+    --db:#3ecf8e;
+    --cache:#f5a623;
+    --wx:#07c160;
+    --oss:#c58cff;
+    --poster:#ff8fab;
+    --err:#ff5f56;
+    --warn:#ffd166;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:32px 20px 80px;
+    background:var(--bg);color:var(--txt);
+    font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+  header h1{font-size:22px;margin:0 0 6px;letter-spacing:.5px}
+  header .sub{color:var(--muted);font-size:13px}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .method{
+    display:inline-block;background:var(--accent);color:#fff;
+    padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;margin-right:8px
+  }
+  .endpoint{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:16px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:22px 0 8px;font-size:12px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  .flow{position:relative;margin-top:24px;padding-left:0}
+  .node{
+    position:relative;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:14px 18px;margin:0 auto;max-width:560px;
+  }
+  .node .t{font-weight:600;font-size:14px}
+  .node .d{color:var(--muted);font-size:12.5px;margin-top:4px}
+  .node.step{border-left:3px solid var(--accent)}
+  .node.decision{background:var(--panel-2);border-style:dashed;max-width:560px}
+  .node.decision .t::before{content:"◇ ";color:var(--warn)}
+  .node.ext{border-left:3px solid var(--wx)}
+  .node.store{border-left:3px solid var(--db)}
+  .node.cache{border-left:3px solid var(--cache)}
+  .node.out{border-left:3px solid var(--oss)}
+  .node.poster{border-left:3px solid var(--poster)}
+  .node.err{border-left:3px solid var(--err)}
+
+  .arrow{
+    width:2px;height:26px;background:var(--line);margin:0 auto;position:relative;
+  }
+  .arrow::after{
+    content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:var(--line);
+  }
+  .arrow .lbl{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    white-space:nowrap;font-size:11.5px;color:var(--muted);
+    background:var(--bg);padding:0 6px;
+  }
+  .arrow.left .lbl{left:auto;right:14px}
+
+  .branch{
+    display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:900px;margin:0 auto;
+  }
+  .branch .col{position:relative}
+  .branch .col .cap{
+    text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px;
+    text-transform:uppercase;letter-spacing:.6px
+  }
+  .branch .col.yes .cap{color:var(--db)}
+  .branch .col.no .cap{color:var(--accent)}
+  .branch .node{max-width:none}
+
+  .split{position:relative;max-width:900px;margin:0 auto;height:24px}
+  .split::before{
+    content:"";position:absolute;top:12px;left:50%;width:2px;height:12px;background:var(--line)
+  }
+  .split::after{
+    content:"";position:absolute;top:12px;left:25%;right:25%;height:2px;background:var(--line)
+  }
+  .split i{
+    position:absolute;top:12px;width:2px;height:12px;background:var(--line)
+  }
+  .split i.l{left:25%}
+  .split i.r{left:calc(75% - 2px)}
+
+  .join{
+    max-width:900px;margin:0 auto;height:26px;position:relative
+  }
+  .join::before{
+    content:"";position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--line)
+  }
+  .join i{position:absolute;top:0;width:2px;height:14px;background:var(--line)}
+  .join i.l{left:25%}
+  .join i.r{left:calc(75% - 2px)}
+  .join::after{
+    content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    width:2px;height:12px;background:var(--line)
+  }
+
+  .loop{
+    max-width:900px;margin:14px auto 0;position:relative;
+    border:1px dashed var(--line);border-radius:12px;padding:18px 16px 14px;
+  }
+  .loop .badge{
+    position:absolute;top:-11px;left:18px;background:var(--bg);padding:0 8px;
+    font-size:11.5px;color:var(--warn);letter-spacing:.5px
+  }
+  .loop .note{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}
+
+  section{margin-top:46px}
+  section h2{
+    font-size:16px;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)
+  }
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);border-radius:8px;overflow:hidden}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{background:var(--panel-2);color:var(--muted);font-weight:600;font-size:12px}
+  tr:last-child td{border-bottom:none}
+  td code{color:var(--warn)}
+
+  .ex{display:grid;gap:16px}
+  .ex .row{display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:start}
+  .ex .lab{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:8px;
+    padding:12px 14px;font-size:12.5px;color:var(--muted)
+  }
+  .ex .lab b{display:block;color:var(--txt);font-size:13.5px;margin-bottom:6px}
+  .ex .lab .verb{
+    display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:4px;
+    margin-bottom:6px;background:var(--accent);color:#fff
+  }
+  .ex .lab .verb.ok{background:var(--db);color:#06281a}
+  .ex .lab .verb.bad{background:var(--err);color:#2a0a08}
+  pre{
+    margin:0;background:#0b0d11;border:1px solid var(--line);border-radius:8px;
+    padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.55;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#cdd6e4
+  }
+  pre .k{color:#7ee787}
+  pre .s{color:#a5d6ff}
+  pre .n{color:#ffab70}
+  pre .c{color:#6e7681}
+  pre .h{color:#d2a8ff}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .card h3{margin:0 0 8px;font-size:13.5px;color:var(--accent)}
+  .card ul{margin:0;padding-left:18px;color:var(--muted);font-size:12.5px}
+  .card ul li{margin:4px 0}
+  footer{margin-top:40px;color:var(--muted);font-size:12px;text-align:center}
+  @media (max-width:760px){
+    .branch,.grid2{grid-template-columns:1fr}
+    .split,.join{display:none}
+    .ex .row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="method">GET</span><span class="endpoint">/app/poster/qrcode</span></h1>
+    <div class="sub">
+      生成小程序带参二维码 + 邀请海报 · 控制器
+      <code>commune-mp/.../controller/claimsApp/generateAndSavePoster.java</code>
+      → 方法 <code>getWxaCodeBase64()</code>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--accent)"></i>业务步骤</span>
+    <span><i class="dot" style="background:var(--warn)"></i>判断分支</span>
+    <span><i class="dot" style="background:var(--db)"></i>MySQL</span>
+    <span><i class="dot" style="background:var(--cache)"></i>Redis</span>
+    <span><i class="dot" style="background:var(--wx)"></i>微信开放接口</span>
+    <span><i class="dot" style="background:var(--oss)"></i>阿里云 OSS</span>
+    <span><i class="dot" style="background:var(--poster)"></i>海报合成 PosterComposer</span>
+    <span><i class="dot" style="background:var(--err)"></i>异常/失败</span>
+  </div>
+
+  <div class="flow">
+    <div class="node step">
+      <div class="t">1. 前端发起请求</div>
+      <div class="d">GET /communed/app/poster/qrcode（携带登录态 JWT）</div>
+    </div>
+
+    <div class="arrow"><span class="lbl">retryCount = 0，MAX_RETRY = 1</span></div>
+
+    <div class="node step">
+      <div class="t">2. 获取当前用户</div>
+      <div class="d"><code>WebContext.getCurrentUser().getUserId()</code> —— 从登录上下文取 userId</div>
+    </div>
+
+    <div class="arrow"><span class="lbl">userId</span></div>
+
+    <div class="node store">
+      <div class="t">3. 查询是否已生成过邀请二维码 + 海报</div>
+      <div class="d"><code>lpgsUserService.getInvitedQrcode(userId)</code> →
+        <code>SELECT invited_qrcode FROM lpgs_user WHERE id = #{userId}</code><br/>
+        <code>lpgsUserService.getInvitePoster(userId)</code> →
+        <code>SELECT invited_poster FROM lpgs_user WHERE id = #{userId}</code></div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="node decision">
+      <div class="t">qrcode 与 poster <b>同时</b>非空？</div>
+      <div class="d">两者都已存在才短路返回；只要有一个缺失就继续走生成流程</div>
+    </div>
+
+    <div class="split"><i class="l"></i><i class="r"></i></div>
+
+    <div class="branch">
+      <div class="col yes">
+        <div class="cap">是 · 两者都已存在</div>
+        <div class="node store">
+          <div class="t">直接返回数据库结果</div>
+          <div class="d">构造 <code>Wxqrcode{qrcode=已有URL, poster=已有URL}</code>，
+            控制台打印「数据库」，返回 <code>Result.success</code></div>
+        </div>
+      </div>
+      <div class="col no">
+        <div class="cap">否 · 任一缺失，需要生成</div>
+        <div class="node step">
+          <div class="t">校验 userId 合法性</div>
+          <div class="d"><code>userId == null || userId &lt;= 0</code> → 抛 <code>IllegalArgumentException("用户ID必须为正整数")</code></div>
+        </div>
+        <div class="arrow" style="margin-top:14px"><span class="lbl">合法</span></div>
+        <div class="node cache">
+          <div class="t">4. 获取 access_token</div>
+          <div class="d">首次：<code>getValidAccessToken()</code> 读 Redis key
+            <code>wechat_access_token</code>，未命中则双检锁调微信 API 拉新 token 并缓存 <b>7000s</b><br/>
+          重试（retryCount&gt;0）：<code>refreshAndGetToken()</code> 先 <code>delete</code> 旧 token 再拉新</div>
+        </div>
+        <div class="arrow" style="margin-top:14px"></div>
+        <div class="node step">
+          <div class="t">5. 构建微信接口参数</div>
+          <div class="d mono" style="color:#9ecbff">
+            page = pages/invite/inviteYou<br/>
+            width = 430<br/>
+            scene = pid={userId}<br/>
+            env_version = ${wechat.config.env_version}<br/>
+            is_hyaline = true
+          </div>
+        </div>
+        <div class="arrow" style="margin-top:14px"></div>
+        <div class="node ext">
+          <div class="t">6. 调用微信生成二维码接口</div>
+          <div class="d"><code>POST https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=…</code><br/>
+          Apache HttpClient，连接超时 5s / 读取超时 10s，返回原始字节</div>
+        </div>
+        <div class="arrow" style="margin-top:14px"></div>
+        <div class="node decision">
+          <div class="t">响应首字节是 <code>{</code> 吗？</div>
+          <div class="d">是 → JSON 错误体；否 → 图片二进制</div>
+        </div>
+        <div class="arrow" style="margin-top:14px"><span class="lbl">是 · 错误响应</span></div>
+        <div class="node err">
+          <div class="t">解析 errcode / errmsg</div>
+          <div class="d"><code>errcode == 40001</code> 且未达 MAX_RETRY → <code>retryCount++</code> 强制刷新 token 后重试循环；
+            否则抛 <code>WeChatApiException(errmsg)</code></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="join"><i class="l"></i><i class="r"></i></div>
+
+    <div class="loop">
+      <span class="badge">重试循环 · while (retryCount &lt;= MAX_RETRY = 1)</span>
+
+      <div class="node out">
+        <div class="t">7. 上传微信二维码原图到 OSS（PNG）</div>
+        <div class="d"><code>aliyunOssClient.buildObjectKey("png")</code> → 路径
+          <code>{prefix}/{yyyy}/{MM}/{uuid}.png</code><br/>
+          <code>putObject(..., "image/png")</code> → <code>qrcodeUrl</code></div>
+      </div>
+
+      <div class="arrow" style="margin-top:0"><span class="lbl">image/png 字节</span></div>
+
+      <div class="node poster">
+        <div class="t">8. 合成邀请海报</div>
+        <div class="d"><code>posterComposer.compose(qrcodeBytes)</code>（<code>compont/PosterComposer.java:37</code>）<br/>
+        读取模板 <code>app.poster.template</code>（classpath: / http(s): / 文件路径，双检锁缓存）→
+        按 <code>app.poster.qrcode.x/y/width/height</code> 用 Graphics2D 以 BICUBIC 插值绘制二维码 →
+        输出 JPEG（质量 0.92）</div>
+      </div>
+
+      <div class="arrow"><span class="lbl">posterBytes (jpg)</span></div>
+
+      <div class="node out">
+        <div class="t">9. 上传海报到 OSS（JPG）</div>
+        <div class="d"><code>buildObjectKey("jpg")</code> → <code>putObject(..., "image/jpeg")</code> → <code>posterUrl</code><br/>
+        组装返回体 <code>Wxqrcode{qrcode=qrcodeUrl, poster=posterUrl}</code></div>
+      </div>
+
+      <div class="arrow"></div>
+
+      <div class="node store">
+        <div class="t">10. 落库，下次直接复用</div>
+        <div class="d"><code>lpgsUserService.addUserInviteInfo(userId, qrcode, poster)</code><br/>
+        SQL：<code>UPDATE lpgs_user SET invited_qrcode=#{qrcode}, invited_poster=#{poster} WHERE id=#{userId}</code><br/>
+        备注：若跳转路径或海报模板变化，需清空这两个字段重新生成</div>
+      </div>
+
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <div class="t">11. 返回</div>
+        <div class="d"><code>Result.success(wxqrcode)</code> —— data 同时含 <code>qrcode</code> 与 <code>poster</code>
+        </div>
+      </div>
+
+      <div class="note">循环结束仍未成功则返回 <code>Result.error("请求超过最大重试次数")</code></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>请求结构</h2>
+    <div class="ex">
+      <div class="row">
+        <div class="lab">
+          <span class="verb">GET</span>
+          <b>/communed/app/poster/qrcode</b>
+          无 query 参数、无请求体；鉴权依赖 JWT
+        </div>
+        <pre><span class="c">// http/poster.http</span>
+GET {{host}}/communed/app/poster/qrcode HTTP/1.1
+<span class="h">Authorization</span>: Bearer {{token}}
+<span class="h">Accept</span>: application/json</pre>
+      </div>
+      <div class="row">
+        <div class="lab">
+          <b>参数说明</b>
+          全部由服务端自行推导
+        </div>
+        <table>
+          <thead><tr><th style="width:22%">来源</th><th style="width:26%">字段</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>Header</td><td><code>Authorization</code></td><td>Bearer JWT，经 <code>WebContext.getCurrentUser()</code> 解析出 <code>userId</code></td></tr>
+            <tr><td>配置</td><td><code>wechat.config.env_version</code></td><td>透传给微信作为 <code>env_version</code>（体验/正式版）</td></tr>
+            <tr><td>配置</td><td><code>app.poster.*</code></td><td>海报模板地址与二维码绘制坐标</td></tr>
+            <tr><td>—</td><td>query / body</td><td>本接口不接收任何入参</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>响应结构</h2>
+    <div class="ex">
+      <div class="row">
+        <div class="lab">
+          <span class="verb ok">200</span>
+          <b>成功 · 新生成</b>
+          首次调用：调微信 → 双图上传 OSS → 落库
+        </div>
+        <pre>{
+  <span class="k">"code"</span>: <span class="n">200</span>,
+  <span class="k">"msg"</span>: <span class="s">"操作成功"</span>,
+  <span class="k">"data"</span>: {
+    <span class="k">"qrcode"</span>: <span class="s">"https://&lt;bucket&gt;.oss-cn-hangzhou.aliyuncs.com/poster/2026/10/8f3c1e2a-....png"</span>,
+    <span class="k">"poster"</span>: <span class="s">"https://&lt;bucket&gt;.oss-cn-hangzhou.aliyuncs.com/poster/2026/10/8f3c1e2b-....jpg"</span>
+  }
+}</pre>
+      </div>
+
+      <div class="row">
+        <div class="lab">
+          <span class="verb ok">200</span>
+          <b>成功 · 命中缓存</b>
+          <code>invited_qrcode</code> 与 <code>invited_poster</code> 均非空，直接返回（日志「数据库」）
+        </div>
+        <pre>{
+  <span class="k">"code"</span>: <span class="n">200</span>,
+  <span class="k">"msg"</span>: <span class="s">"操作成功"</span>,
+  <span class="k">"data"</span>: {
+    <span class="k">"qrcode"</span>: <span class="s">"https://&lt;bucket&gt;.oss-cn-hangzhou.aliyuncs.com/poster/2026/09/1a2b3c4d-....png"</span>,
+    <span class="k">"poster"</span>: <span class="s">"https://&lt;bucket&gt;.oss-cn-hangzhou.aliyuncs.com/poster/2026/09/1a2b3c4e-....jpg"</span>
+  }
+}</pre>
+      </div>
+
+      <div class="row">
+        <div class="lab">
+          <b>data 字段说明</b>
+          对应实体 <code>Wxqrcode</code>
+        </div>
+        <table>
+          <thead><tr><th style="width:22%">字段</th><th style="width:26%">类型</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>data.qrcode</code></td><td>string</td><td>小程序带参二维码 PNG 的 OSS 地址，scene = <code>pid={userId}</code></td></tr>
+            <tr><td><code>data.poster</code></td><td>string</td><td>二维码合成后的邀请海报 JPG 的 OSS 地址</td></tr>
+            <tr><td><code>code</code></td><td>int</td><td>200 成功；500 失败（<code>Result.error</code>）</td></tr>
+            <tr><td><code>msg</code></td><td>string</td><td>成功为「操作成功」，失败为具体错误信息</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="row">
+        <div class="lab">
+          <span class="verb bad">500</span>
+          <b>失败 · 业务异常</b>
+          HTTP 状态仍为 200，由 <code>code</code> 判定
+        </div>
+        <pre>{
+  <span class="k">"code"</span>: <span class="n">500</span>,
+  <span class="k">"msg"</span>: <span class="s">"获取微信AccessToken失败"</span>,
+  <span class="k">"data"</span>: <span class="n">null</span>
+}</pre>
+      </div>
+
+      <div class="row">
+        <div class="lab">
+          <b>常见 msg 取值</b>
+          失败时 <code>data</code> 恒为 <code>null</code>
+        </div>
+        <table>
+          <thead><tr><th style="width:44%">msg</th><th>触发场景</th></tr></thead>
+          <tbody>
+            <tr><td><code>用户ID必须为正整数</code></td><td>userId 为空或 ≤ 0</td></tr>
+            <tr><td><code>获取微信AccessToken失败</code></td><td>token 为空</td></tr>
+            <tr><td><code>errmsg</code>（微信原文）</td><td>getwxacodeunlimit 返回非 40001 错误码</td></tr>
+            <tr><td><code>海报模板未配置，请检查 app.poster.template</code></td><td>模板路径未配置</td></tr>
+            <tr><td><code>海报模板读取失败: …</code> / <code>二维码解析失败</code> / <code>海报编码失败</code></td><td>PosterComposer 图片处理异常</td></tr>
+            <tr><td><code>请求超过最大重试次数</code></td><td>40001 重试 1 次后仍失败</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>涉及的外部依赖与数据</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>存储</h3>
+        <ul>
+          <li>MySQL 表 <code>lpgs_user</code>：字段 <code>invited_qrcode</code>、<code>invited_poster</code>
+            （读：getInvitedQrcode / getInvitePoster；写：addUserInviteInfo 一次更新两个字段）</li>
+          <li>Redis key <code>wechat_access_token</code>：TTL 7000 秒，双检锁 + 40001 强制刷新</li>
+          <li>阿里云 OSS：二维码 PNG 与海报 JPG 各上传一次，返回公网 URL</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>外部接口与组件</h3>
+        <ul>
+          <li><code>GET /wxa/getwxacodeunlimit</code>：生成无限制小程序码（is_hyaline 透明底）</li>
+          <li><code>WeChatUtil.getAccessToken(appid, secret)</code>：换取 access_token</li>
+          <li>超时配置：connect 5000ms / socket 10000ms</li>
+          <li><code>PosterComposer</code> + <code>PosterProperties(prefix=app.poster)</code>：海报模板与二维码位置</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>异常与返回分支</h2>
+    <table>
+      <thead>
+        <tr><th style="width:26%">触发条件</th><th style="width:26%">处理</th><th>返回</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>invited_qrcode</code> 与 <code>invited_poster</code> 均有值</td>
+          <td>短路返回，不调用微信、不合成海报</td>
+          <td><code>Result.success(Wxqrcode{qrcode, poster})</code>（日志标记「数据库」）</td>
+        </tr>
+        <tr>
+          <td>两者之一为空</td>
+          <td>继续走完整生成流程（会覆盖原有值）</td>
+          <td>生成后由 <code>addUserInviteInfo</code> 同时回写两个字段</td>
+        </tr>
+        <tr>
+          <td>userId 为空或 &lt;= 0</td>
+          <td>抛 IllegalArgumentException，被 catch(Exception) 捕获</td>
+          <td><code>Result.error("用户ID必须为正整数")</code></td>
+        </tr>
+        <tr>
+          <td>access_token 为空</td>
+          <td>抛 RuntimeException</td>
+          <td><code>Result.error("获取微信AccessToken失败")</code></td>
+        </tr>
+        <tr>
+          <td><code>errcode = 40001</code>（token 失效）</td>
+          <td>删除 Redis 旧 token，refreshAndGetToken 后重试 1 次</td>
+          <td>重试成功则正常返回，否则进入下一条</td>
+        </tr>
+        <tr>
+          <td>其他微信错误码</td>
+          <td>抛 WeChatApiException</td>
+          <td><code>Result.error(errmsg)</code></td>
+        </tr>
+        <tr>
+          <td>海报模板未配置 / 读取失败</td>
+          <td><code>IllegalStateException("海报模板未配置，请检查 app.poster.template")</code></td>
+          <td><code>Result.error(错误信息)</code></td>
+        </tr>
+        <tr>
+          <td>模板或二维码图片解析失败 / 海报编码失败</td>
+          <td>PosterComposer 抛 IllegalStateException</td>
+          <td><code>Result.error(错误信息)</code>，同时 log.error("生成二维码失败")</td>
+        </tr>
+        <tr>
+          <td>循环耗尽（重试 &gt; 1 次）</td>
+          <td>退出 while</td>
+          <td><code>Result.error("请求超过最大重试次数")</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>关键源码位置</h2>
+    <table>
+      <thead><tr><th style="width:34%">文件</th><th style="width:22%">位置</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>controller/claimsApp/generateAndSavePoster.java</code></td>
+          <td>:65 <code>getWxaCodeBase64</code></td>
+          <td>主流程 + 重试循环</td>
+        </tr>
+        <tr>
+          <td><code>controller/claimsApp/generateAndSavePoster.java</code></td>
+          <td>:132 <code>callWeChatApi</code></td>
+          <td>调用微信 getwxacodeunlimit</td>
+        </tr>
+        <tr>
+          <td><code>controller/claimsApp/generateAndSavePoster.java</code></td>
+          <td>:157 <code>buildImageResponse</code></td>
+          <td>二维码上传 OSS → 合成海报 → 海报上传 OSS → 封装 Wxqrcode</td>
+        </tr>
+        <tr>
+          <td><code>controller/claimsApp/generateAndSavePoster.java</code></td>
+          <td>:183 / :199 / :216</td>
+          <td>token 强制刷新 / 读缓存 / 拉新并缓存</td>
+        </tr>
+        <tr>
+          <td><code>compont/PosterComposer.java</code></td>
+          <td>:37 <code>compose</code></td>
+          <td>模板加载（:52 双检锁）、二维码绘制、JPEG 编码（:106）</td>
+        </tr>
+        <tr>
+          <td><code>config/PosterProperties.java</code></td>
+          <td>prefix <code>app.poster</code></td>
+          <td>template、qrcode.x/y/width/height</td>
+        </tr>
+        <tr>
+          <td><code>mybatis/LpgsUserMapper.xml</code></td>
+          <td>:1691 / :1700 / :1709</td>
+          <td>getInvitedQrcode、getInvitePoster、addUserInviteInfo（双字段更新）</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>基于源码生成 · 对应文档 docs/api/generate-and-save-poster.md</footer>
+</div>
+</body>
+</html>
