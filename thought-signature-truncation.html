@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>被截断的思维签名 · kimi-code × magpie</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@400&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #5a6580;
+      --color-accent: #bf4520;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', 'Noto Sans SC', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif SC', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --motion-fast: 160ms;
+      --motion-step: 480ms;
+      --motion-hold: 720ms;
+      --motion-total: 5040ms;
+      --motion-ease: cubic-bezier(.2,.8,.2,1);
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 48px 32px;
+      color: var(--color-ink);
+      background: var(--color-paper);
+      font-family: var(--font-sans);
+    }
+    [data-motion-root] { width: min(100%, 1000px); }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--color-muted);
+      font: 500 12px/1.4 var(--font-mono);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0 0 24px; font: 400 32px/1.15 var(--font-serif); }
+    svg { display: block; width: 100%; min-width: 1000px; }
+    /* The SVG holds its readable width (min-width == the viewBox width, so the
+       type ramp is never silently scaled down). This wrapper lets a narrow
+       screen scroll the diagram instead of the whole page. body is a centred
+       grid, so the root needs max-width/min-width to stop the grid item from
+       sizing itself to the SVG's max-content width. */
+    [data-motion-root] { max-width: 100%; min-width: 0; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .caption { margin: 16px 0 0; color: var(--color-muted); font: 400 14px/1.6 var(--font-serif); }
+
+    /* Static source is complete. Only an initialized enhancement hides items. */
+    .motion-ready [data-motion-item] {
+      opacity: .12;
+      transform: translateY(8px);
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: opacity var(--motion-step) var(--motion-ease),
+                  transform var(--motion-step) var(--motion-ease);
+    }
+    .motion-ready [data-motion-item].is-visible,
+    .motion-ready[data-frame="end"] [data-motion-item],
+    .motion-ready[data-frame="static"] [data-motion-item] {
+      opacity: 1;
+      transform: none;
+    }
+
+    [data-motion-controls] {
+      display: none;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--color-rule);
+    }
+    .motion-ready [data-motion-controls] { display: flex; }
+    [data-motion-controls][hidden] { display: none !important; }
+    [data-motion-controls] button {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 8px 12px;
+      border: 1px solid var(--color-muted);
+      border-radius: 4px;
+      color: var(--color-ink);
+      background: var(--color-paper);
+      font: 600 12px/1 var(--font-sans);
+      cursor: pointer;
+    }
+    [data-motion-controls] button:hover { border-color: var(--color-accent); }
+    [data-motion-controls] button:focus-visible {
+      outline: 3px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+    [data-motion-controls] button:disabled { cursor: not-allowed; opacity: .45; }
+    [data-motion-status-visible] {
+      margin-left: auto;
+      color: var(--color-muted);
+      font: 500 12px/1.4 var(--font-mono);
+    }
+    .keyboard-help { color: var(--color-muted); font: 500 12px/1.4 var(--font-mono); }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+    noscript p {
+      margin: 12px 0 0;
+      color: var(--color-muted);
+      font: 500 12px/1.4 var(--font-mono);
+    }
+
+    html[data-motion="static"] [data-motion-controls],
+    html[data-motion="static"] [data-motion-decorative] { display: none !important; }
+    html[data-motion="static"] [data-motion-item] {
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+      transition: none !important;
+    }
+    html[data-motion="step"] [data-motion-controls],
+    html[data-motion="step"] [data-motion-decorative] { display: none !important; }
+    html[data-motion="step"] [data-motion-item] {
+      animation: none !important;
+      transition: none !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+      }
+      [data-motion-item] { opacity: 1 !important; transform: none !important; }
+      [data-motion-decorative] { display: none !important; }
+      [data-motion-controls] { display: none !important; }
+    }
+    @media print {
+      /* Paper has no scrollbar, so the local scroller would clip instead of
+         scroll. Let the diagram scale down to the sheet: smaller but whole
+         beats sharp but cut off. */
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+      [data-motion-controls], [data-motion-decorative] { display: none !important; }
+      [data-motion-item] {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main data-motion-root data-motion-mode="step" data-step-count="7" data-step-current="7" data-frame="static" data-static-frame="complete">
+    <p class="eyebrow">Incident · Sequence · Gemini 3.8 Flash</p>
+    <h1>被截断的思维签名</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 740" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="signature-truncation-title signature-truncation-desc">
+        <title id="signature-truncation-title">被截断的思维签名</title>
+        <desc id="signature-truncation-desc">序列图演示：kimi-code 首次工具调用时从上游拿到 652 字符、内含思维签名的工具调用 id；kimi-code 出站前把 id 截断到 64 字符，第二次请求因此携带残缺签名，上游最终返回 400 Corrupted thought signature。</desc>
+        <defs>
+          <marker id="signature-truncation-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+          </marker>
+          <marker id="signature-truncation-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#bf4520"/>
+          </marker>
+          <marker id="signature-truncation-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/>
+          </marker>
+        </defs>
+
+        <rect width="1000" height="740" fill="#f5f5f5"/>
+
+        <!-- =================================================================
+             LIFELINES — dashed vertical lines behind everything.
+             Actor centers: 120, 360, 620, 880.
+             ================================================================= -->
+        <line x1="120" y1="132" x2="120" y2="660" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="360" y1="132" x2="360" y2="660" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="620" y1="132" x2="620" y2="660" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="880" y1="132" x2="880" y2="660" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+
+        <!-- =================================================================
+             MESSAGES — time flows top->down. Arrows first, labels after,
+             every label on an opaque paper mask with a clear gap.
+             ================================================================= -->
+
+        <!-- Step 1: user task -->
+        <g data-motion-item data-step="1" aria-label="步骤 1：用户发出任务，需要读取文件">
+          <line x1="120" y1="180" x2="360" y2="180" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#signature-truncation-arrow)"/>
+          <rect x="152" y="148" width="176" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="240" y="160" text-anchor="middle" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">优化海报流程图文本</text>
+          <text x="240" y="172" text-anchor="middle" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">docs/poster-qrcode-flow.html</text>
+        </g>
+
+        <!-- Step 2: first request, no signature in history yet -->
+        <g data-motion-item data-step="2" aria-label="步骤 2：kimi-code 发出第 1 次请求，历史中还没有签名">
+          <line x1="360" y1="256" x2="620" y2="256" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#signature-truncation-arrow-link)"/>
+          <rect x="412" y="224" width="156" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="490" y="236" text-anchor="middle" fill="#2e5aa8" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">第 1 次请求 · 无签名</text>
+          <text x="490" y="248" text-anchor="middle" fill="#2e5aa8" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">POST /v1/chat/completions</text>
+        </g>
+        <g data-motion-item data-step="2" aria-label="步骤 2：magpie 把请求转发到 Antigravity 后端">
+          <line x1="620" y1="256" x2="880" y2="256" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#signature-truncation-arrow-link)"/>
+          <rect x="702" y="224" width="96" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="750" y="236" text-anchor="middle" fill="#2e5aa8" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">转发请求</text>
+          <text x="750" y="248" text-anchor="middle" fill="#2e5aa8" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">cloudcode-pa</text>
+        </g>
+
+        <!-- Step 3: upstream returns the signed tool call -->
+        <g data-motion-item data-step="3" aria-label="步骤 3：上游返回带思维签名的工具调用">
+          <line x1="880" y1="332" x2="620" y2="332" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#signature-truncation-arrow)"/>
+          <rect x="673" y="300" width="154" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="750" y="312" text-anchor="middle" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">返回工具调用 + 签名</text>
+          <text x="750" y="324" text-anchor="middle" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">200 OK · TOOL_CALL + SIG</text>
+        </g>
+        <g data-motion-item data-step="3" aria-label="步骤 3：magpie 原样下发 id，共 652 字符，内含签名">
+          <line x1="620" y1="332" x2="360" y2="332" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#signature-truncation-arrow)"/>
+          <rect x="416" y="300" width="148" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="490" y="312" text-anchor="middle" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">含签名的 id · 652 字符</text>
+          <text x="490" y="324" text-anchor="middle" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">call_…__ts__&lt;SIG&gt;</text>
+        </g>
+
+        <!-- Step 4: local tool execution -->
+        <g data-motion-item data-step="4" aria-label="步骤 4：kimi-code 执行 Read 工具，工具结果就绪">
+          <path d="M 364 380 L 404 380 L 404 412 L 364 412" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#signature-truncation-arrow)"/>
+          <rect x="412" y="380" width="124" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="474" y="392" text-anchor="middle" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">执行 Read 工具 ✓</text>
+          <text x="474" y="404" text-anchor="middle" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">TOOL RESULT READY</text>
+        </g>
+
+        <!-- Step 5: the truncation -->
+        <g data-motion-item data-step="5" aria-label="步骤 5：出站前 id 被截断到 64 字符，签名尾段被丢弃">
+          <rect x="384" y="436" width="220" height="64" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+          <text x="396" y="458" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">出站前：id 截断到 64 字符</text>
+          <text x="396" y="476" fill="#bf4520" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.04em">id.slice(0, 64)</text>
+          <text x="396" y="493" fill="#bf4520" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">签名尾段被丢弃</text>
+        </g>
+
+        <!-- Step 6: second request with the truncated id -->
+        <g data-motion-item data-step="6" aria-label="步骤 6：kimi-code 第 2 次请求回传工具结果，携带残缺 id">
+          <line x1="360" y1="572" x2="620" y2="572" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#signature-truncation-arrow-link)"/>
+          <rect x="409" y="540" width="162" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="490" y="552" text-anchor="middle" fill="#2e5aa8" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">第 2 次请求 · id 已截断</text>
+          <text x="490" y="564" text-anchor="middle" fill="#2e5aa8" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">TOOL RESULT + TRUNCATED ID</text>
+        </g>
+        <g data-motion-item data-step="6" aria-label="步骤 6：magpie 把残缺签名转发上游">
+          <line x1="620" y1="572" x2="880" y2="572" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#signature-truncation-arrow-link)"/>
+          <rect x="702" y="540" width="96" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="750" y="552" text-anchor="middle" fill="#2e5aa8" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">转发残缺签名</text>
+          <text x="750" y="564" text-anchor="middle" fill="#2e5aa8" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">TRUNCATED SIG</text>
+        </g>
+
+        <!-- Step 7: upstream verdict -->
+        <g data-motion-item data-step="7" aria-label="步骤 7：上游返回 400 Corrupted thought signature，经 magpie 原样透传">
+          <line x1="880" y1="644" x2="360" y2="644" stroke="#bf4520" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#signature-truncation-arrow-accent)"/>
+          <rect x="650" y="612" width="200" height="24" rx="2" fill="#f5f5f5"/>
+          <text x="750" y="624" text-anchor="middle" fill="#bf4520" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">上游 400 · 原样透传</text>
+          <text x="750" y="636" text-anchor="middle" fill="#bf4520" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">400 Corrupted thought signature.</text>
+        </g>
+
+        <!-- =================================================================
+             ACTOR BOXES — drawn after arrows/labels.
+             ================================================================= -->
+
+        <!-- 用户 (input / soft) -->
+        <rect x="40" y="64" width="160" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="40" y="64" width="160" height="56" rx="6" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="1"/>
+        <rect x="48" y="72" width="28" height="12" rx="2" fill="transparent" stroke="rgba(90,101,128,0.40)" stroke-width="0.8"/>
+        <text x="62" y="81" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">USER</text>
+        <text x="120" y="96" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">用户</text>
+
+        <!-- kimi-code (backend) -->
+        <rect x="280" y="64" width="160" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="280" y="64" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="288" y="72" width="40" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.22)" stroke-width="0.8"/>
+        <text x="308" y="81" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">CLIENT</text>
+        <text x="360" y="96" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">kimi-code</text>
+        <text x="360" y="111" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">desktop 1.0.4</text>
+
+        <!-- magpie (store) -->
+        <rect x="540" y="64" width="160" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="540" y="64" width="160" height="56" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <rect x="548" y="72" width="36" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.22)" stroke-width="0.8"/>
+        <text x="566" y="81" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">RELAY</text>
+        <text x="620" y="96" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">magpie</text>
+        <text x="620" y="111" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">localhost:3425</text>
+
+        <!-- Antigravity 后端 (external) -->
+        <rect x="800" y="64" width="160" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="800" y="64" width="160" height="56" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+        <rect x="808" y="72" width="48" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.22)" stroke-width="0.8"/>
+        <text x="832" y="81" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">UPSTREAM</text>
+        <text x="880" y="96" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">Antigravity 后端</text>
+        <text x="880" y="111" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">cloudcode-pa</text>
+
+        <!-- =================================================================
+             LEGEND — horizontal strip at the bottom.
+             ================================================================= -->
+        <line x1="40" y1="688" x2="960" y2="688" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <text x="40" y="704" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.18em">LEGEND</text>
+
+        <line x1="40" y1="720" x2="70" y2="720" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#signature-truncation-arrow-link)"/>
+        <text x="80" y="724" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">请求</text>
+
+        <line x1="240" y1="720" x2="270" y2="720" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#signature-truncation-arrow)"/>
+        <text x="280" y="724" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">返回</text>
+
+        <path d="M 440 712 L 452 712 L 452 724 L 440 724" fill="none" stroke="#4f5d75" stroke-width="1.2"/>
+        <text x="464" y="724" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">本地执行</text>
+
+        <rect x="644" y="714" width="14" height="12" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+        <text x="668" y="724" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">关键节点</text>
+      </svg>
+    </div>
+
+    <p class="caption">对照实验（curl 直连 magpie）：完整 id 回传 → 200；截断到 64 字符 → 400 Corrupted thought signature。</p>
+
+    <div data-motion-controls role="group" aria-label="演示播放控制">
+      <button type="button" data-motion-action="prev">上一步</button>
+      <button type="button" data-motion-action="play" aria-pressed="false">播放</button>
+      <button type="button" data-motion-action="pause" aria-pressed="true">暂停</button>
+      <button type="button" data-motion-action="next">下一步</button>
+      <button type="button" data-motion-action="replay">重播</button>
+      <span class="keyboard-help">←/→ 步进 · 空格播放/暂停 · R 重播 · Home/End 首尾</span>
+      <span data-motion-status-visible aria-hidden="true">第 <span data-motion-step-label>7</span> 步 / 共 7 步</span>
+    </div>
+    <p class="sr-only" data-motion-status role="status" aria-live="polite" aria-atomic="true"></p>
+    <noscript><p>动画控制需要 JavaScript；上方已显示完整的静态图。</p></noscript>
+  </main>
+
+  <script data-diagram-controls>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const staticOverride = params.get('motion') === 'static' || document.documentElement.dataset.motion === 'static';
+      const requestedStep = params.get('step');
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+      document.fonts.ready.then(() => { document.documentElement.dataset.fontsReady = 'true'; });
+
+      document.querySelectorAll('[data-motion-root]').forEach((root) => {
+        const count = Number(root.dataset.stepCount);
+        const hold = parseFloat(getComputedStyle(root).getPropertyValue('--motion-hold')) || 720;
+        const parsedStep = requestedStep !== null && /^\d+$/.test(requestedStep) ? Number(requestedStep) : null;
+        const exactStep = params.get('motion') === 'step' && Number.isSafeInteger(parsedStep) && parsedStep >= 0 && parsedStep <= count ? parsedStep : null;
+        const items = [...root.querySelectorAll('[data-motion-item]')];
+        const labels = Array.from({ length: count + 1 }, (_, index) => index === 0
+          ? 'Ready'
+          : items.filter((item) => !item.hasAttribute('data-motion-decorative') && Number(item.dataset.step) === index)
+              .map((item) => item.getAttribute('aria-label')).join('; '));
+        const controls = root.querySelector('[data-motion-controls]');
+        const status = root.querySelector('[data-motion-status]');
+        const visibleStep = root.querySelector('[data-motion-step-label]');
+        let step = count;
+        let timer = 0;
+        let playing = false;
+        let stepBeforeReduce = 0;
+        let resumeAfterReduce = root.dataset.motionMode === 'reveal';
+
+        const buttons = (action) => controls.querySelector(`[data-motion-action="${action}"]`);
+        const clearClock = () => { window.clearTimeout(timer); timer = 0; };
+        const announce = () => { status.textContent = `Step ${step} of ${count}: ${labels[step] || 'Complete'}`; };
+        const setControlsAvailable = (available) => {
+          controls.hidden = !available;
+          controls.setAttribute('aria-hidden', String(!available));
+          controls.dataset.playbackDisabled = String(!available);
+          controls.querySelectorAll('button').forEach((control) => { control.disabled = !available; });
+        };
+
+        function render(next, userInitiated = false) {
+          step = Math.max(0, Math.min(count, next));
+          root.dataset.stepCurrent = String(step);
+          root.dataset.frame = step === count ? 'end' : step === 0 ? 'start' : 'step';
+          items.forEach((item) => {
+            const itemStep = Number(item.dataset.step);
+            item.classList.toggle('is-visible', itemStep <= step);
+            item.classList.toggle('is-current', itemStep === step);
+          });
+          if (visibleStep) visibleStep.textContent = String(step);
+          const unavailable = controls.dataset.playbackDisabled === 'true';
+          buttons('prev').disabled = unavailable || step === 0;
+          buttons('next').disabled = unavailable || step === count;
+          if (userInitiated) announce();
+        }
+
+        function pause(userInitiated = false) {
+          clearClock();
+          playing = false;
+          root.classList.remove('is-playing');
+          buttons('play').setAttribute('aria-pressed', 'false');
+          buttons('pause').setAttribute('aria-pressed', 'true');
+          if (userInitiated) status.textContent = `Paused at step ${step} of ${count}`;
+        }
+
+        function finish() {
+          pause(false);
+          root.dataset.frame = 'end';
+          status.textContent = `Complete · step ${count} of ${count}`;
+        }
+
+        function tick() {
+          if (!playing) return;
+          if (step >= count) { finish(); return; }
+          render(step + 1, false);
+          if (step >= count) { finish(); return; }
+          timer = window.setTimeout(tick, hold);
+        }
+
+        function play(fromStart = false, userInitiated = false) {
+          clearClock();
+          if (fromStart || step >= count) render(0, userInitiated);
+          playing = true;
+          root.classList.add('is-playing');
+          buttons('play').setAttribute('aria-pressed', 'true');
+          buttons('pause').setAttribute('aria-pressed', 'false');
+          timer = window.setTimeout(tick, hold);
+        }
+
+        controls.addEventListener('click', (event) => {
+          const button = event.target.closest('[data-motion-action]');
+          if (!button) return;
+          const action = button.dataset.motionAction;
+          if (action === 'play') play(false, true);
+          if (action === 'pause') pause(true);
+          if (action === 'replay') play(true, true);
+          if (action === 'prev') { pause(false); render(step - 1, true); }
+          if (action === 'next') { pause(false); render(step + 1, true); }
+        });
+
+        root.addEventListener('keydown', (event) => {
+          if (event.target.matches('input, textarea, select, a[href]')) return;
+          const keys = { ArrowLeft: step - 1, ArrowRight: step + 1, Home: 0, End: count };
+          if (event.code === 'Space' && !event.target.closest('button')) {
+            event.preventDefault();
+            playing ? pause(true) : play(false, true);
+            return;
+          }
+          if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.toLowerCase() === 'r') {
+            event.preventDefault();
+            play(true, true);
+            return;
+          }
+          if (!(event.key in keys)) return;
+          event.preventDefault();
+          pause(false);
+          render(keys[event.key], true);
+        });
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden' && playing) pause(false);
+        });
+        reduce.addEventListener('change', (event) => {
+          if (event.matches && root.dataset.motionState !== 'reduced') {
+            stepBeforeReduce = step;
+            resumeAfterReduce = playing;
+          }
+          pause(false);
+          if (event.matches) {
+            setControlsAvailable(false);
+            render(count, false);
+            root.dataset.frame = 'static';
+            root.dataset.motionState = 'reduced';
+            status.textContent = 'Reduced motion · complete static frame · playback controls unavailable';
+          } else if (staticOverride || root.dataset.motionMode === 'none') {
+            setControlsAvailable(false);
+            render(count, false);
+            root.dataset.frame = 'static';
+            root.dataset.motionState = 'static';
+            status.textContent = 'Static frame · complete diagram · playback controls unavailable';
+          } else {
+            delete root.dataset.motionState;
+            if (exactStep !== null) {
+              setControlsAvailable(false);
+              render(exactStep, false);
+              root.dataset.frame = 'step';
+              root.dataset.motionState = 'test';
+              status.textContent = `Test frame · step ${step} of ${count} · playback controls unavailable`;
+            } else {
+              setControlsAvailable(true);
+              render(stepBeforeReduce, false);
+              status.textContent = `Ready · step ${step} of ${count}`;
+              if (resumeAfterReduce && root.dataset.motionMode === 'reveal') {
+                play(false, false);
+              }
+            }
+            resumeAfterReduce = false;
+          }
+        });
+
+        if (staticOverride) {
+          document.documentElement.dataset.motion = 'static';
+          pause(false);
+          setControlsAvailable(false);
+          render(count, false);
+          root.dataset.frame = 'static';
+          root.dataset.motionState = 'static';
+          status.textContent = 'Static frame · complete diagram · playback controls unavailable';
+        } else if (reduce.matches || root.dataset.motionMode === 'none') {
+          pause(false);
+          setControlsAvailable(false);
+          render(count, false);
+          root.dataset.frame = 'static';
+          root.dataset.motionState = reduce.matches ? 'reduced' : 'static';
+          status.textContent = reduce.matches
+            ? 'Reduced motion · complete static frame · playback controls unavailable'
+            : 'Static frame · complete diagram · playback controls unavailable';
+        } else if (exactStep !== null) {
+          document.documentElement.dataset.motion = 'step';
+          pause(false);
+          setControlsAvailable(false);
+          render(exactStep, false);
+          root.dataset.frame = 'step';
+          root.dataset.motionState = 'test';
+          status.textContent = `Test frame · step ${step} of ${count} · playback controls unavailable`;
+        } else if (root.dataset.motionMode === 'reveal') {
+          setControlsAvailable(true);
+          render(0, false);
+          play(false, false);
+        } else {
+          pause(false);
+          setControlsAvailable(true);
+          render(0, false);
+          status.textContent = `Ready · step 0 of ${count}`;
+        }
+        root.classList.add('motion-ready');
+      });
+    })();
+  </script>
+</body>
+</html>

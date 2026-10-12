@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>文档页</title>
+
+    <script src="js/feather.min.js"></script>
+    <link href="css/fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" media="screen" href="css/main.css" />
+    <link rel="stylesheet" id="darkModeStyle" type="text/css" href="css/dark.css" disabled />
+</head>
+
+<body>
+    <div class="content">
+
+        <header>
+            <div class="main" id="main_title">
+                <a href="#">Hello</a>
+            </div>
+
+            <nav>
+                <a href="#">主页</a>
+                <a href="#">文章</a>
+                <a href="#">自我介绍</a>
+                <a href="#">标签</a>
+                <a href="#">RSS</a>
+                |
+                <a href="#">En</a>
+                |
+                <a id="dark-mode-toggle" onclick="toggleTheme()" href=""></a>
+                <script src="js/themetoggle.js"></script>
+            </nav>
+        </header>
+
+        <main class="post-main post-main-with-toc">
+            <div class="post-layout">
+                <article>
+                    <div class="title">
+                        <h1 class="title">AI 时代下程序员的价值：一些可能会过时的个人思考</h1>
+                        <div class="meta">
+                            on 2026-07-07
+                        </div>
+                    </div>
+
+                    <p class="post-description">示例页：正文只保留用于展示样式的示例文字，覆盖标题、段落、列表、行内代码、代码块、引用与表格等元素。</p>
+
+                    <div class="post-toc-inline">
+                        <nav class="post-toc" aria-label="文章目录">
+                            <div class="post-toc-title">目录</div>
+                            <ul>
+                                <li class="post-toc-level-2"><a href="#wen-ben-yu-biao-ti">文本与标题</a></li>
+                                <li class="post-toc-level-3"><a href="#san-ji-biao-ti">三级标题</a></li>
+                                <li class="post-toc-level-2"><a href="#lie-biao">列表</a></li>
+                                <li class="post-toc-level-2"><a href="#dai-ma">代码</a></li>
+                                <li class="post-toc-level-2"><a href="#yin-yong-yu-biao-ge">引用与表格</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <section class="body">
+                        <h2 id="wen-ben-yu-biao-ti">文本与标题</h2>
+                        <p>段落文字示例，包含 <strong>加粗</strong>、<mark>高亮标记</mark>、<del>删除线</del>、<code>行内代码</code>，以及<a href="#">带下划线的链接</a>。</p>
+                        <p>标题由 <code>h1</code> 到 <code>h6</code> 自动带上前缀，字号保持一致，靠前缀区分层级。</p>
+
+                        <h3 id="san-ji-biao-ti">三级标题</h3>
+                        <p>更细的层级用于小节划分，目录里的缩进也随之加深。</p>
+
+                        <h2 id="lie-biao">列表</h2>
+                        <ul>
+                            <li>无序列表项，带圆点前缀</li>
+                            <li>第二项，用于查看行距与缩进</li>
+                        </ul>
+
+                        <h2 id="dai-ma">代码</h2>
+                        <p>行内代码用于短片段，比如 <code>cargo build --release</code>；代码块整体带浅色底：</p>
+                        <pre><code class="language-rust">pub fn read_len(buf: &amp;[u8]) -&gt; Option&lt;usize&gt; {
+    let head: [u8; 4] = buf.get(..4)?.try_into().ok()?;
+    Some(u32::from_be_bytes(head) as usize)
+}</code></pre>
+                        <pre><code class="language-shell">$ cargo test --release</code></pre>
+
+                        <h2 id="yin-yong-yu-biao-ge">引用与表格</h2>
+                        <blockquote>引用块：左侧竖线，文字颜色更浅。</blockquote>
+                        <hr />
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>元素</th>
+                                    <th>样式来源</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>标题前缀</td>
+                                    <td>h1–h6 ::before</td>
+                                </tr>
+                                <tr>
+                                    <td>链接下划线</td>
+                                    <td>border-bottom</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <div class="post-tags">
+                        <nav class="nav tags">
+                            <ul class="tags">
+                                <li><a href="#">AI 与开发工具</a></li>
+                                <li><a href="#">工程实践与复盘</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </article>
+
+                <aside class="post-toc-sidebar">
+                    <nav class="post-toc" aria-label="文章目录">
+                        <div class="post-toc-title">目录</div>
+                        <ul>
+                            <li class="post-toc-level-2"><a href="#wen-ben-yu-biao-ti">文本与标题</a></li>
+                            <li class="post-toc-level-3"><a href="#san-ji-biao-ti">三级标题</a></li>
+                            <li class="post-toc-level-2"><a href="#lie-biao">列表</a></li>
+                            <li class="post-toc-level-2"><a href="#dai-ma">代码</a></li>
+                            <li class="post-toc-level-2"><a href="#yin-yong-yu-biao-ge">引用与表格</a></li>
+                        </ul>
+                    </nav>
+                </aside>
+
+            </div>
+        </main>
+
+        <script>
+            feather.replace();
+        </script>
+
+    </div>
+</body>
+
+</html>
