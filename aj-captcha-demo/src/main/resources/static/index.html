@@ -65,6 +65,24 @@
                 否则生成与校验可能落到不同实例。</li>
         </ol>
     </section>
+
+    <section class="card faq" id="faq">
+        <h2>常见问题（FAQ）</h2>
+        <dl class="qa">
+            <dt>底图和拼图块是从哪来的？</dt>
+            <dd>滑动底图（310×155）、拼图块（47×155）、点选底图（310×155）都取自 AJ-Captcha 官方仓库的 demo 工程
+                <code>service/springboot/src/main/resources/images</code>；页面的 js / css / 字体来自官方
+                <code>view/html</code> 目录。都是原样拷贝，没有改动。</dd>
+
+            <dt>能换成自己的图片吗？</dt>
+            <dd>能。滑动底图用任意照片裁成 310×155；拼图块是 47×155 的透明 PNG，高度必须等于底图高；
+                点选底图裁成 310×155。改 <code>aj.captcha.jigsaw</code>、<code>aj.captcha.pic-click</code> 指向自己的目录即可。</dd>
+
+            <dt>右下角的“我的水印”是图片自带的吗？</dt>
+            <dd>不是。那是依赖在每次 <code>/captcha/get</code> 时用 Java2D 画上去的：白色、字号约 12、固定在右下角。
+                改文字用 <code>aj.captcha.water-mark</code>，去掉就把它设成空值。</dd>
+        </dl>
+    </section>
 </main>
 
 <script src="js/jquery.min.js"></script>
