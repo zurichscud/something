@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJ-Captcha 行为验证码 Demo</title>
+    <link rel="stylesheet" href="css/verify.css">
+    <link rel="stylesheet" href="css/demo.css">
+</head>
+<body>
+<header class="hd">
+    <h1>AJ-Captcha 行为验证码 Demo</h1>
+    <p>原生 HTML + Spring Boot 2.7 · <code>com.anji-plus:captcha-spring-boot-starter:2.0.0</code></p>
+</header>
+
+<main class="wrap">
+    <!-- 1. 滑动拼图 -->
+    <section class="card">
+        <h2><span class="idx">1</span>滑动拼图（嵌入式 fixed）</h2>
+        <p class="desc">拖动滑块让拼图块与缺口重合，失败可点击图片右上角刷新。</p>
+        <div id="mpanel1"></div>
+        <p class="tip" id="slide-tip">等待验证…</p>
+    </section>
+
+    <!-- 2. 滑动拼图 + 登录（弹出式 pop） -->
+    <section class="card">
+        <h2><span class="idx">2</span>滑动拼图（弹出式 pop）+ 登录二次校验</h2>
+        <p class="desc">点击「登录」弹出验证码，验证通过后把 <code>captchaVerification</code> 和账号密码一起提交给
+            <code>POST /auth/login</code>，由后端做二次校验。</p>
+        <form class="login" id="loginForm" onsubmit="return false;">
+            <label>用户名 <input type="text" id="username" value="admin" autocomplete="off"></label>
+            <label>密　码 <input type="password" id="password" value="123456" autocomplete="off"></label>
+            <button class="btn" id="btn" type="button">登 录</button>
+        </form>
+        <div id="mpanel2"></div>
+        <pre class="result" id="login-result">登录结果会显示在这里</pre>
+    </section>
+
+    <!-- 3. 文字点选 -->
+    <section class="card">
+        <h2><span class="idx">3</span>文字点选（clickWord）</h2>
+        <p class="desc">按顺序点击图中提示的汉字，坐标由后端校验，误差范围为一个字号（25px）。</p>
+        <div id="mpanel3"></div>
+        <p class="tip" id="point-tip">等待验证…</p>
+    </section>
+
+    <!-- 4. 请求日志 -->
+    <section class="card">
+        <h2><span class="idx">4</span>请求日志</h2>
+        <p class="desc">验证码交互过程（get / check / verify / login）的实时日志。</p>
+        <pre class="log" id="log"></pre>
+    </section>
+
+    <section class="card note">
+        <h2>接入要点</h2>
+        <ol>
+            <li>后端引入 <code>captcha-spring-boot-starter</code>，配置 <code>aj.captcha.*</code>；starter 只提供
+                <code>CaptchaService</code>，<code>/captcha/get</code>、<code>/captcha/check</code> 需要自己暴露（见
+                <code>CaptchaController</code>）。</li>
+            <li>前端引入 <code>verify.js</code>（依赖 jQuery 与 crypto-js），调用
+                <code>$('#id').slideVerify({...})</code> 或 <code>$('#id').pointsVerify({...})</code>。</li>
+            <li>验证成功后前端拿到 <code>captchaVerification</code>，随业务请求提交，后端用
+                <code>captchaService.verification(vo)</code> 校验，校验一次即失效。</li>
+            <li>单机用默认内存缓存；多实例部署需实现 <code>CaptchaCacheService</code>（SPI）接入 Redis，
+                否则生成与校验可能落到不同实例。</li>
+        </ol>
+    </section>
+</main>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/crypto-js.js"></script>
+<script src="js/ase.js"></script>
+<script src="js/verify.js"></script>
+<script>
+    /* ============ 请求日志：把每次接口交互转成一行文本 ============ */
+    var $log = $('#log');
+    function logLine(text) {
+        var time = new Date().toLocaleTimeString('zh-CN', {hour12: false});
+        $log.append('[' + time + '] ' + text + '\n');
+        $log.scrollTop($log[0].scrollHeight);
+    }
+    $(document).ajaxComplete(function (event, xhr, settings) {
+        var body = '';
+        try {
+            body = JSON.parse(xhr.responseText);
+        } catch (e) {
+            return;
+        }
+        var path = settings.url.replace(location.origin, '');
+        var detail = body.repCode
+            ? 'repCode=' + body.repCode + (body.repMsg ? ' (' + body.repMsg + ')' : '')
+            : JSON.stringify(body);
+        logLine('POST ' + path + ' → ' + detail);
+    });
+
+    /* ============ 1. 滑动拼图：嵌入式 ============ */
+    $('#mpanel1').slideVerify({
+        baseUrl: '',              // 与页面同源，留空即可；跨域时写 http://ip:port
+        captchaType: 'blockPuzzle',
+        mode: 'fixed',
+        imgSize: {width: '310px', height: '155px'},
+        barSize: {width: '310px', height: '40px'},
+        ready: function () {
+            logLine('滑动拼图（嵌入式）加载完成');
+        },
+        success: function (params) {
+            $('#slide-tip').text('验证成功，captchaVerification = ' + params.captchaVerification);
+            logLine('滑动拼图（嵌入式）验证成功，captchaVerification=' + params.captchaVerification);
+        },
+        error: function () {
+            $('#slide-tip').text('验证失败，请重试');
+        }
+    });
+
+    /* ============ 2. 滑动拼图：弹出式 + 登录 ============ */
+    var pendingVerification = null;
+
+    $('#mpanel2').slideVerify({
+        baseUrl: '',
+        captchaType: 'blockPuzzle',
+        mode: 'pop',
+        containerId: 'btn',      // pop 模式必填：点击哪个元素弹出验证码
+        imgSize: {width: '310px', height: '155px'},
+        barSize: {width: '310px', height: '40px'},
+        beforeCheck: function () {  // pop 模式弹窗前校验表单
+            if ($('#username').val().trim() === '' || $('#password').val() === '') {
+                alert('请先输入用户名和密码');
+                return false;
+            }
+            return true;
+        },
+        ready: function () {
+            logLine('滑动拼图（弹出式）加载完成');
+        },
+        success: function (params) {
+            pendingVerification = params.captchaVerification;
+            doLogin();
+        }
+    });
+
+    function doLogin() {
+        var payload = {
+            username: $('#username').val(),
+            password: $('#password').val(),
+            captchaVerification: pendingVerification
+        };
+        $.ajax({
+            type: 'post',
+            url: '/auth/login',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(payload),
+            success: function (res) {
+                $('#login-result').text(JSON.stringify(res, null, 2));
+                logLine('POST /auth/login → ' + (res.success ? '成功' : '失败') + '：' + res.message);
+            },
+            error: function (xhr) {
+                $('#login-result').text('请求异常：HTTP ' + xhr.status);
+            }
+        });
+    }
+
+    /* ============ 3. 文字点选 ============ */
+    $('#mpanel3').pointsVerify({
+        baseUrl: '',
+        captchaType: 'clickWord',
+        mode: 'fixed',
+        checkNum: 3,               // 需要点选的文字个数，与后端 word-count-1 保持一致
+        imgSize: {width: '310px', height: '155px'},
+        barSize: {width: '310px', height: '40px'},
+        ready: function () {
+            logLine('文字点选加载完成');
+        },
+        success: function (params) {
+            $('#point-tip').text('验证成功，captchaVerification = ' + params.captchaVerification);
+            logLine('文字点选验证成功，captchaVerification=' + params.captchaVerification);
+        },
+        error: function () {
+            $('#point-tip').text('验证失败，请重试');
+        }
+    });
+</script>
+</body>
+</html>
